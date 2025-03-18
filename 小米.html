@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; }
+        canvas { display: block; margin: 0 auto; }
+        .label {
+            position: absolute;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            pointer-events: none; /* 关键：事件穿透 */
+        }
+        #container {
+            width: 66.67%; /* 调整模型展示区域的宽度为网页的2/3 */
+            height: 66.67vh; /* 调整模型展示区域的高度为网页的2/3 */
+            margin: 0 auto; /* 使模型展示区域居中 */
+            position: relative;
+        }
+        .content {
+            padding: 20px;
+            text-align: center;
+        }
+        .content img {
+            max-width: 100%;
+            height: auto;
+        }
+        .search-box {
+            margin: 20px auto; /* 居中对齐 */
+            width: 50%; /* 调整搜索框的宽度为页面宽度的一半 */
+        }
+        .search-box input {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+        }
+        .loader {
+            border: 16px solid #f3f3f3; /* Light grey */
+            border-top: 16px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            animation: spin 2s linear infinite;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <h1>安仁路自建房模型</h1>
+        <div class="search-box">
+            <input type="text" placeholder="搜索...">
+        </div>
+        <p>房屋信息</p>
+    </div>
+    <div id="container">
+        <div class="loader" id="loader"></div>
+    </div>
+    <div class="content">
+        <h2>李四的房屋</h2>
+        <p>房屋信息</p>
+        <h2>巡查信息</h2>
+        <img src="example.jpg" alt="示例图片">
+        <p>上图是一个示例图片，展示了模型的实际应用场景。</p>
+        <p>更多内容...</p>
+        <p>更多内容...</p>
+        <p>更多内容...</p>
+        <p>更多内容...</p>
+        <p>更多内容...</p>
+        <p>更多内容...</p>
+        <p>更多内容...</p>
+        <p>更多内容...</p>
+        <p>更多内容...</p>
+    </div>
+
+    <!-- Three.js依赖 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/renderers/CSS2DRenderer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+
+    <script>
+        let camera, scene, renderer, controls;
+    
+        init();
+        animate();
+    
+        function init() {
+            // 1. 初始化场景
+            scene = new THREE.Scene();
+            const canvas = document.createElement('canvas');
+            canvas.width = 32;
+            canvas.height = window.innerHeight;
+            const context = canvas.getContext('2d');
+            const gradient = context.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#87CEEB'); // 天空蓝
+            gradient.addColorStop(1, '#FFFFFF'); // 白色
+            context.fillStyle = gradient;
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            scene.background = new THREE.CanvasTexture(canvas); // 设置背景为渐变色
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth * 2 / 3, window.innerHeight * 2 / 3); // 设置渲染器大小为容器的2/3宽度和高度
+            document.getElementById('container').appendChild(renderer.domElement);
+    
+            // 2. 添加光源
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8); // 增加环境光的强度
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(5, 5, 5);
+            scene.add(directionalLight);
+    
+            // 3. 加载模型
+            const gltfLoader = new THREE.GLTFLoader();
+            gltfLoader.load('https://zjfsit.oss-cn-guangzhou.aliyuncs.com/model.glb', (gltf) => {
+                const model = gltf.scene;
+                scene.add(model);
+    
+                // 校准控制器焦点
+                const box = new THREE.Box3().setFromObject(model);
+                const center = box.getCenter(new THREE.Vector3());
+                controls.target.copy(center);
+                controls.update();
+    
+                // 设置相机位置，使其正对模型
+                const size = box.getSize(new THREE.Vector3());
+                const maxDim = Math.max(size.x, size.y, size.z);
+                const fov = camera.fov * (Math.PI / 180);
+                let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
+                cameraZ *= 2; // 放大一些距离
+                camera.position.set(center.x, center.y, cameraZ);
+                camera.lookAt(center);
+
+                // 旋转模型，使其正面对相机
+                model.rotation.y = Math.PI; // 确保模型正面对相机
+
+                // 调整模型材质的颜色和亮度
+                model.traverse((node) => {
+                    if (node.isMesh) {
+                        node.material.color.setHex(0xffffff); // 设置模型颜色为白色
+                        node.material.needsUpdate = true;
+                    }
+                });
+
+                // 隐藏加载动画
+                document.getElementById('loader').style.display = 'none';
+
+                // 强制更新渲染器
+                controls.update();
+                renderer.render(scene, camera);
+            });
+    
+            // 4. 初始化控制器
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.screenSpacePanning = true; // 支持平移操作
+            controls.mouseButtons = {
+                LEFT: THREE.MOUSE.ROTATE,
+                MIDDLE: THREE.MOUSE.PAN,
+                RIGHT: THREE.MOUSE.DOLLY
+            };
+
+            // 在初始化函数末尾添加一次渲染调用
+            renderer.render(scene, camera);
+        }
+    
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update(); // 关键：更新控制器状态
+            renderer.render(scene, camera);
+        }
+    
+        // 窗口自适应
+        window.addEventListener('resize', () => {
+            camera.aspect = (window.innerWidth * 2 / 3) / (window.innerHeight * 2 / 3);
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth * 2 / 3, window.innerHeight * 2 / 3);
+        });
+    </script>
+</body>
+</html>

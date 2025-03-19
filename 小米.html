@@ -52,14 +52,50 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        #pdf-container {
+            width: 100%;
+            height: 500px;
+            border: 1px solid #ccc;
+            overflow: auto;
+        }
+        .pdf-page {
+            margin: 10px 0;
+            text-align: center;
+        }
+        .carousel {
+            width: 66.67%; /* 调整轮播块的宽度为网页的2/3 */
+            margin: 20px auto; /* 使轮播块居中 */
+            overflow: hidden;
+            position: relative;
+        }
+        .carousel img {
+            width: 100%;
+            display: none;
+        }
+        .carousel img.active {
+            display: block;
+        }
+        .carousel-buttons {
+            position: absolute;
+            top: 50%;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            transform: translateY(-50%);
+        }
+        .carousel-buttons button {
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+        }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
 </head>
 <body>
     <div class="content">
         <h1>安仁路自建房模型</h1>
-        <div class="search-box">
-            <input type="text" placeholder="搜索...">
-        </div>
         <p>房屋信息</p>
     </div>
     <div id="container">
@@ -67,19 +103,28 @@
     </div>
     <div class="content">
         <h2>李四的房屋</h2>
-        <p>房屋信息</p>
+        <p>户主：黄金梅 位置：东方北路无号无栋 豪山风味腊肉馆门面所在房屋 层数：5 面积：140㎡</p>
         <h2>巡查信息</h2>
-        <img src="example.jpg" alt="示例图片">
-        <p>上图是一个示例图片，展示了模型的实际应用场景。</p>
-        <p>更多内容...</p>
-        <p>更多内容...</p>
-        <p>更多内容...</p>
-        <p>更多内容...</p>
-        <p>更多内容...</p>
-        <p>更多内容...</p>
-        <p>更多内容...</p>
-        <p>更多内容...</p>
-        <p>更多内容...</p>
+        <img src="tu.png" alt="示例图片">
+        <p>墙面存在严重的剥落现象</p>
+        <p>‘快评’报告等级：Bp级</p>
+        <p>其他问题：1.报告已过适用期 2.屋面加设较大信号塔构筑物。</p>
+    </div>
+    <div class="content">
+        <h2>PDF展示</h2>
+        <div id="pdf-container"></div>
+    </div>
+    <div class="content">
+        <h2>照片轮播</h2>
+        <div class="carousel">
+            <img src="bj.jpg" class="active" alt="照片1">
+            <img src="fz.jpg" alt="照片2">
+            <img src="fz.jpg" alt="照片3">
+            <div class="carousel-buttons">
+                <button id="prev">上一张</button>
+                <button id="next">下一张</button>
+            </div>
+        </div>
     </div>
 
     <!-- Three.js依赖 -->
@@ -90,48 +135,39 @@
 
     <script>
         let camera, scene, renderer, controls;
-    
+
         init();
         animate();
-    
+
         function init() {
             // 1. 初始化场景
             scene = new THREE.Scene();
-            const canvas = document.createElement('canvas');
-            canvas.width = 32;
-            canvas.height = window.innerHeight;
-            const context = canvas.getContext('2d');
-            const gradient = context.createLinearGradient(0, 0, 0, canvas.height);
-            gradient.addColorStop(0, '#87CEEB'); // 天空蓝
-            gradient.addColorStop(1, '#FFFFFF'); // 白色
-            context.fillStyle = gradient;
-            context.fillRect(0, 0, canvas.width, canvas.height);
-            scene.background = new THREE.CanvasTexture(canvas); // 设置背景为渐变色
+            scene.background = new THREE.Color(0xffffff); // 设置背景颜色为白色
 
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth * 2 / 3, window.innerHeight * 2 / 3); // 设置渲染器大小为容器的2/3宽度和高度
             document.getElementById('container').appendChild(renderer.domElement);
-    
+
             // 2. 添加光源
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.8); // 增加环境光的强度
             scene.add(ambientLight);
             const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
             directionalLight.position.set(5, 5, 5);
             scene.add(directionalLight);
-    
+
             // 3. 加载模型
             const gltfLoader = new THREE.GLTFLoader();
-            gltfLoader.load('https://zjfsit.oss-cn-guangzhou.aliyuncs.com/model.glb', (gltf) => {
+            gltfLoader.load('hjm.glb', (gltf) => {
                 const model = gltf.scene;
                 scene.add(model);
-    
+
                 // 校准控制器焦点
                 const box = new THREE.Box3().setFromObject(model);
                 const center = box.getCenter(new THREE.Vector3());
                 controls.target.copy(center);
                 controls.update();
-    
+
                 // 设置相机位置，使其正对模型
                 const size = box.getSize(new THREE.Vector3());
                 const maxDim = Math.max(size.x, size.y, size.z);
@@ -159,7 +195,7 @@
                 controls.update();
                 renderer.render(scene, camera);
             });
-    
+
             // 4. 初始化控制器
             controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
@@ -174,18 +210,78 @@
             // 在初始化函数末尾添加一次渲染调用
             renderer.render(scene, camera);
         }
-    
+
         function animate() {
             requestAnimationFrame(animate);
             controls.update(); // 关键：更新控制器状态
             renderer.render(scene, camera);
         }
-    
+
+        // PDF.js加载和展示PDF文件
+        const url = 'xiaohong.pdf'; // 替换为你的PDF文件路径
+
+        const pdfjsLib = window['pdfjs-dist/build/pdf'];
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
+
+        const loadingTask = pdfjsLib.getDocument(url);
+        loadingTask.promise.then(function(pdf) {
+            console.log('PDF loaded');
+
+            // Fetch all pages
+            for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+                pdf.getPage(pageNumber).then(function(page) {
+                    console.log('Page loaded');
+
+                    const scale = 1.5;
+                    const viewport = page.getViewport({ scale: scale });
+
+                    // Prepare canvas using PDF page dimensions
+                    const container = document.getElementById('pdf-container');
+                    const pageDiv = document.createElement('div');
+                    pageDiv.className = 'pdf-page';
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+                    pageDiv.appendChild(canvas);
+                    container.appendChild(pageDiv);
+
+                    // Render PDF page into canvas context
+                    const renderContext = {
+                        canvasContext: context,
+                        viewport: viewport
+                    };
+                    const renderTask = page.render(renderContext);
+                    renderTask.promise.then(function() {
+                        console.log('Page rendered');
+                    });
+                });
+            }
+        }, function(reason) {
+            console.error(reason);
+        });
+
         // 窗口自适应
         window.addEventListener('resize', () => {
             camera.aspect = (window.innerWidth * 2 / 3) / (window.innerHeight * 2 / 3);
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth * 2 / 3, window.innerHeight * 2 / 3);
+        });
+
+        // 照片轮播功能
+        const carouselImages = document.querySelectorAll('.carousel img');
+        let currentImageIndex = 0;
+
+        document.getElementById('next').addEventListener('click', () => {
+            carouselImages[currentImageIndex].classList.remove('active');
+            currentImageIndex = (currentImageIndex + 1) % carouselImages.length;
+            carouselImages[currentImageIndex].classList.add('active');
+        });
+
+        document.getElementById('prev').addEventListener('click', () => {
+            carouselImages[currentImageIndex].classList.remove('active');
+            currentImageIndex = (currentImageIndex - 1 + carouselImages.length) % carouselImages.length;
+            carouselImages[currentImageIndex].classList.add('active');
         });
     </script>
 </body>

@@ -8,9 +8,25 @@
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            background: url('bj.jpg') no-repeat center center fixed;
-            background-size: cover;
             color: #fff;
+        }
+        .background-block {
+            position: relative; /* 为绝对定位的子元素提供基准 */
+            padding: 20px;
+            min-height: calc(100vh - 150px); /* 缩小300像素 */
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .background-block img.background-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1; /* 将图片置于底层 */
         }
         .nav {
             display: flex;
@@ -100,47 +116,106 @@
             color: red;
             margin-top: -3px;
         }
+        .image-gallery {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5); /* 半透明背景 */
+            margin-top: 20px;
+        }
+        .image-gallery .image-item {
+            width: 18%; /* 每个图片占18%的宽度 */
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .image-gallery img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .image-gallery p {
+            margin-top: 10px;
+            color: #fff;
+        }
+        .move-up-title {
+            transform: translateY(-250px); /* 上移550像素 */
+        }
+
+        .move-up-search {
+            transform: translateY(-200px); /* 上移400像素 */
+        }
     </style>
 </head>
 <body>
-    <div class="nav">
-        <div class="nav-item">
-            <a href="index.html">成果主页</a>
-            <span class="hover-text">返回主页5555</span>
+    <div class="background-block">
+        <img src="bj.jpg" alt="Background Image" class="background-image">
+        <div class="nav">
+            <div class="nav-item">
+                <a href="index.html">成果主页</a>
+                <span class="hover-text">返回主页5555</span>
+            </div>
+            <div class="nav-item">
+                <a href="background.html">项目背景</a>
+                <span class="hover-text">了解更多</span>
+            </div>
+            <div class="nav-item">
+                <a href="significance.html">项目意义</a>
+                <span class="hover-text">我们的服务</span>
+            </div>
+            <div class="nav-item">
+                <a href="process.html">项目流程</a>
+                <span class="hover-text">获取联系信息</span>
+            </div>
+            <div class="nav-item">
+                <a href="progress.html">项目进度</a>
+                <span class="hover-text">最新动态</span>
+            </div>
+            <div class="nav-item">
+                <a href="issues.html">当下问题</a>
+                <span class="hover-text">阅读我们的博客</span>
+            </div>
+            <div class="nav-item">
+                <a href="future.html">未来展望</a>
+                <span class="hover-text">查看常见问题</span>
+            </div>
         </div>
-        <div class="nav-item">
-            <a href="background.html">项目背景</a>
-            <span class="hover-text">了解更多</span>
-        </div>
-        <div class="nav-item">
-            <a href="significance.html">项目意义</a>
-            <span class="hover-text">我们的服务</span>
-        </div>
-        <div class="nav-item">
-            <a href="process.html">项目流程</a>
-            <span class="hover-text">获取联系信息</span>
-        </div>
-        <div class="nav-item">
-            <a href="progress.html">项目进度</a>
-            <span class="hover-text">最新动态</span>
-        </div>
-        <div class="nav-item">
-            <a href="issues.html">当下问题</a>
-            <span class="hover-text">阅读我们的博客</span>
-        </div>
-        <div class="nav-item">
-            <a href="future.html">未来展望</a>
-            <span class="hover-text">查看常见问题</span>
+        <div class="content">
+            <div class="move-up-title">
+                <h1>基于保险制度的自建房安全运维管理</h1>
+            </div>
+            <div class="move-up-search">
+                <div class="search-container">
+                    <form id="searchForm" action="" method="get" onsubmit="return searchName()">
+                        <input type="text" id="searchInput" placeholder="输入名字...">
+                        <input type="submit" value="搜索">
+                    </form>
+                    <div id="errorMessage" class="error-message"></div>
+                </div>
+            </div>
         </div>
     </div>
-    <div class="content">
-        <h1>基于保险制度的自建房安全运维管理</h1>
-        <div class="search-container">
-            <form id="searchForm" action="" method="get" onsubmit="return searchName()">
-                <input type="text" id="searchInput" placeholder="输入名字...">
-                <input type="submit" value="搜索">
-            </form>
-            <div id="errorMessage" class="error-message"></div>
+    <div class="image-gallery">
+        <div class="image-item">
+            <img src="图片\t1.png" alt="Image 1">
+            <p>通过卫星标记为工作人员提供位置信息，实时监测地理信息数据</p>
+        </div>
+        <div class="image-item">
+            <img src="图片\t2.png" alt="Image 2">
+            <p>通过无人机周期性巡航检查房屋数据变化，通过倾斜摄影模型对比及时发现风险</p>
+        </div>
+        <div class="image-item">
+            <img src="图片\t3.png" alt="Image 3">
+            <p>通过工作人员上门检测发现内部危险，排查潜在风险，更新房屋数据</p>
+        </div>
+        <div class="image-item">
+            <img src="图片\t4.png" alt="Image 4">
+            <p>通过系统性体检流程提高管理效率，保证检测数据的真实准确</p>
+        </div>
+        <div class="image-item">
+            <img src="图片\t5.png" alt="Image 5">
+            <p>通过全方位的信息管理平台实现数据共享，促进各方协作，驱动精准决策</p>
         </div>
     </div>
 

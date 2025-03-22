@@ -2,8 +2,40 @@
 <html>
 <head>
     <style>
-        body { margin: 0; font-family: Arial, sans-serif; }
-        canvas { display: block; margin: 0 auto; }
+        body { 
+            margin: 0; 
+            font-family: Arial, sans-serif; 
+            background-color: #f0f0f0; /* 灰色背景 */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: white; /* 白色内容背景 */
+            border: 1px solid #ccc; /* 灰色边框 */
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* 添加阴影 */
+            width: 80%;
+            max-width: 1200px;
+            margin: 20px;
+        }
+        .block {
+            margin-bottom: 60px; /* 每个块之间的间距 */
+            background-color: #f0f0f0; /* 块之间的灰色背景 */
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .block:nth-child(odd) .content {
+            background-color: #ffffff; /* 淡蓝色背景 */
+        }
+        .block:nth-child(even) .content {
+            background-color: white; /* 白色背景 */
+        }
+        canvas { 
+            display: block; 
+            margin: 0 auto; 
+        }
         .label {
             position: absolute;
             background: rgba(0,0,0,0.7);
@@ -14,23 +46,25 @@
             pointer-events: none; /* 关键：事件穿透 */
         }
         #container {
-            width: 66.67%; /* 调整模型展示区域的宽度为网页的2/3 */
+            width: 100%; /* 调整模型展示区域的宽度为容器的100% */
             height: 66.67vh; /* 调整模型展示区域的高度为网页的2/3 */
             margin: 0 auto; /* 使模型展示区域居中 */
             position: relative;
+            background-color: white; /* 设置背景颜色为白色 */
+            border-radius: 10px; /* 添加圆角 */
+            padding: 20px; /* 添加内边距 */
+            box-sizing: border-box; /* 确保内边距不会影响元素的总宽度 */
         }
         .content {
             padding: 20px;
             text-align: center;
+            border-radius: 10px;
         }
         .content img {
             max-width: 100%;
             height: auto;
         }
-        .search-box {
-            margin: 20px auto; /* 居中对齐 */
-            width: 50%; /* 调整搜索框的宽度为页面宽度的一半 */
-        }
+
         .search-box input {
             width: 100%;
             padding: 10px;
@@ -38,7 +72,7 @@
         }
         .loader {
             border: 16px solid #f3f3f3; /* Light grey */
-            border-top: 16px solid #3498db; /* Blue */
+            border-top: 16px solid #ffffff; /* Blue */
             border-radius: 50%;
             width: 120px;
             height: 120px;
@@ -62,12 +96,7 @@
             margin: 10px 0;
             text-align: center;
         }
-        .carousel {
-            width: 66.67%; /* 调整轮播块的宽度为网页的2/3 */
-            margin: 20px auto; /* 使轮播块居中 */
-            overflow: hidden;
-            position: relative;
-        }
+
         .carousel img {
             width: 100%;
             display: none;
@@ -90,39 +119,173 @@
             padding: 10px;
             cursor: pointer;
         }
+        .toc {
+            background-color: #f0f0f0; /* 目录块的灰色背景 */
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 60px; /* 目录块与其他块之间的间距 */
+        }
+        .toc a {
+            display: block;
+            margin: 10px 0;
+            color: #333;
+            text-decoration: none;
+        }
+        .toc a:hover {
+            text-decoration: underline;
+        }
+        .custom-content {
+            position: relative;
+        }
+        .custom-content p {
+            position: relative;
+            left: 300px;
+            text-align: left;
+            display: flex;
+            align-items: center; /* 垂直居中对齐 */
+        }
+        .custom-content img {
+            width: 66.67%; /* 调整图片宽度为块的2/3 */
+            margin: 0 auto;
+            display: block;
+        }
+        .custom-content .spaced {
+            margin-left: 200px; /* 调整这里的值以增加或减少间距 */
+        }
+        .custom-content .spaced1 {
+            margin-left: 185px; /* 调整这里的值以增加或减少间距 */
+        }
+        .custom-content .margin-spaced {
+            margin-left: 230px; /* 设置span前后的间隔 */
+        }
+        .inspection-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .inspection-info .text-content {
+            width: 33.33%; /* 左侧文本部分占1/3 */
+            text-align: left; /* 左对齐文本 */
+        }
+        .inspection-info .image-content {
+            width: 50%; /* 右侧图片部分占2/3 */
+        }
+        .inspection-info .image-content img {
+            height: 50%; /* 调整图片高度为当前高度的2/3 */
+        }
+        .docx-container {
+            border: 1px solid #ccc; /* 边框 */
+            padding: 20px; /* 内边距 */
+            background-color: white; /* 背景颜色 */
+            margin-bottom: 20px; /* 底部间距 */
+        }
+        /* 添加表格样式 */
+        .docx-container table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .docx-container table, .docx-container th, .docx-container td {
+            border: 1px solid black;
+        }
+        .docx-container th, .docx-container td {
+            padding: 8px;
+            text-align: left;
+        }
+        .docx-container tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .photos-content img {
+            width: 66.67%; /* 调整图片宽度为当前宽度的2/3 */
+            margin: 0 auto;
+            display: block;
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
 </head>
 <body>
-    <div class="content">
-        <h1>安仁路自建房模型</h1>
-        <p>房屋信息</p>
-    </div>
-    <div id="container">
-        <div class="loader" id="loader"></div>
-    </div>
-    <div class="content">
-        <h2>李四的房屋</h2>
-        <p>户主：黄金梅 位置：东方北路无号无栋 豪山风味腊肉馆门面所在房屋 层数：5 面积：140㎡</p>
-        <h2>巡查信息</h2>
-        <img src="tu.png" alt="示例图片">
-        <p>墙面存在严重的剥落现象</p>
-        <p>‘快评’报告等级：Bp级</p>
-        <p>其他问题：1.报告已过适用期 2.屋面加设较大信号塔构筑物。</p>
-    </div>
-    <div class="content">
-        <h2>PDF展示</h2>
-        <div id="pdf-container"></div>
-    </div>
-    <div class="content">
-        <h2>照片轮播</h2>
-        <div class="carousel">
-            <img src="bj.jpg" class="active" alt="照片1">
-            <img src="fz.jpg" alt="照片2">
-            <img src="fz.jpg" alt="照片3">
-            <div class="carousel-buttons">
-                <button id="prev">上一张</button>
-                <button id="next">下一张</button>
+    <div class="container">
+        <div class="block toc">
+            <div class="content">
+                <h2>目录</h2>
+                <a href="#basic-info">1.基本信息</a>
+                <a href="#model">2.模型展示</a>
+                <a href="#report">3.鉴定报告</a>
+                <a href="#inspection-info">4.本次巡查初步情况</a>
+                <a href="#work-record">5.现场工作记录表</a>
+                <a href="#photos">6.现场拍摄图</a>
+                <a href="#second-inspection">7.第二次巡查结果</a>
+            </div>
+        </div>
+        <div class="block" id="basic-info">
+            <div class="content custom-content">
+                <h2>基本信息</h2>
+                <h3>基本情况</h3>
+                <p>户主名称 <span class="spaced">张三</span></p>
+                <p>建成年份 <span class="spaced">李四</span></p> 
+                <p>层数 <span class="margin-spaced">王五</span></p> 
+                <p>面积 <span class="margin-spaced">555</span></p> 
+                <p>快评or详测 <span class="spaced1">详测</span></p> 
+                <h2>奥维辅助定位图</h2>
+                <img src="at.png" alt="示例图片">
+            </div>
+        </div>
+        <div class="block" id="model">
+            <div class="content">
+                <h2>模型展示</h2>
+                <div id="container">
+                    <div class="loader" id="loader"></div>
+                </div>
+            </div>
+        </div>
+        <div class="block" id="report">
+            <div class="content">
+                <h2>鉴定报告</h2>
+                <div id="pdf-container"></div>
+            </div>
+        </div>
+
+        <div class="block" id="inspection-info">
+            <div class="content inspection-info">
+                <div class="text-content">
+                    <h2>本次巡查初步情况</h2>
+                    <h3>已有报告类型</h3>
+                    <p>'民建'B级</p>
+                    <h3>对比报告</h3>
+                    <p>不符</p>
+                    <h3>部分异常情况说明</h3>
+                    <p>报告：局部平面布置有误，缺结构图、变形检测、计算分析、构件集评级等；未明晰扩建情况。
+                        <br>结构：二层3交C轴墙体存在明显开裂。
+                        <br>使用：存在屋顶加钢棚的情况</p>
+                </div>
+                <div class="image-content">
+                    <h3>现场照片</h3>
+                    <img src="xct.jpg" alt="示例图片">
+                </div>
+            </div>
+        </div>
+
+        <div class="block" id="work-record">
+            <div class="content">
+                <h2>现场工作记录表</h2>
+                <div id="docx-container-1" class="docx-container"></div>
+                <div id="docx-container-2" class="docx-container"></div>
+            </div>
+        </div>
+        <div class="block" id="photos">
+            <div class="content photos-content">
+                <h2>现场拍摄图</h2>
+                <h3>外景</h3>
+                <img src="wj.png" alt="示例图片">
+                <h3>内景</h3>
+                <img src="nj.png" alt="示例图片">
+                <h3>缺陷</h3>
+                <img src="qx.png" alt="示例图片">
+            </div>
+        </div>
+        <div class="block" id="second-inspection">
+            <div class="content">
+                <h2>第二次巡查结果。。。</h2>
             </div>
         </div>
     </div>
@@ -158,7 +321,7 @@
 
             // 3. 加载模型
             const gltfLoader = new THREE.GLTFLoader();
-            gltfLoader.load('https://zjfsit.oss-cn-guangzhou.aliyuncs.com/model.glb', (gltf) => {
+            gltfLoader.load('hjm.glb', (gltf) => {
                 const model = gltf.scene;
                 scene.add(model);
 
@@ -268,21 +431,26 @@
             renderer.setSize(window.innerWidth * 2 / 3, window.innerHeight * 2 / 3);
         });
 
-        // 照片轮播功能
-        const carouselImages = document.querySelectorAll('.carousel img');
-        let currentImageIndex = 0;
+        // 使用mammoth.js加载和展示docx文件
+        function displayDocx(filePath, containerId) {
+            fetch(filePath)
+                .then(response => response.arrayBuffer())
+                .then(arrayBuffer => mammoth.convertToHtml({arrayBuffer: arrayBuffer}))
+                .then(displayResult)
+                .catch(handleError);
 
-        document.getElementById('next').addEventListener('click', () => {
-            carouselImages[currentImageIndex].classList.remove('active');
-            currentImageIndex = (currentImageIndex + 1) % carouselImages.length;
-            carouselImages[currentImageIndex].classList.add('active');
-        });
+            function displayResult(result) {
+                document.getElementById(containerId).innerHTML = result.value;
+            }
 
-        document.getElementById('prev').addEventListener('click', () => {
-            carouselImages[currentImageIndex].classList.remove('active');
-            currentImageIndex = (currentImageIndex - 1 + carouselImages.length) % carouselImages.length;
-            carouselImages[currentImageIndex].classList.add('active');
-        });
+            function handleError(err) {
+                console.log(err);
+            }
+        }
+
+        // 加载两个docx文件
+        displayDocx('xcb.docx', 'docx-container-1');
+        displayDocx('ypb.docx', 'docx-container-2');
     </script>
 </body>
 </html>
